@@ -1,0 +1,49 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}
+{{ tubewell.name }}
+{% endblock %}
+
+{% block content %}
+
+<h2>{{ tubewell.name }}</h2>
+
+<p>
+Location:
+{{ tubewell.location|default:"N/A" }}
+</p>
+
+<p>
+Rate:
+₹{{ tubewell.rate_per_hour }}/hour
+</p>
+
+<hr>
+
+<h3>Authorized Renters</h3>
+
+<ul>
+{% for ar in authorized_renters %}
+    <li>{{ ar.renter.first_name }} - {{ ar.renter.phone_number }}</li>
+{% empty %}
+    <li>No renters added yet.</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<h3>Add Renter</h3>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add Renter</button>
+</form>
+
+<p>
+<a href="{% url 'owner_dashboard' %}">
+← Back to My Tubewells
+</a>
+</p>
+
+{% endblock %}

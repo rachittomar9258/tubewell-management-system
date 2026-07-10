@@ -1,0 +1,10 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Add Tubewell{% endblock %}
+{% block content %}
+<h2>Add New Tubewell</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

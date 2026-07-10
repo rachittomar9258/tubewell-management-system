@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Tubewell System{% endblock %}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; }
+        .navbar a { color: white; text-decoration: none; margin-left: 15px; }
+        .container { max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
+        button { background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .error { color: red; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <strong>Tubewell System</strong>
+        <div>
+            {% if user.is_authenticated %}
+                <span>{{ user.username }} ({{ user.role }})</span>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'signup' %}">Signup</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="container">
+    {% if messages %}
+        <ul style="list-style:none; padding:0;">
+        {% for message in messages %}
+            <li style="padding:10px; margin-bottom:10px; border-radius:5px; background:#dff0d8; color:#3c763d;">
+                {{ message }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

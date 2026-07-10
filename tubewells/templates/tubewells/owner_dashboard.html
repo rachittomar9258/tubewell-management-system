@@ -1,0 +1,16 @@
+{% extends 'accounts/base.html' %}
+{% block title %}My Tubewells{% endblock %}
+{% block content %}
+<h2>My Tubewells</h2>
+<p><a href="{% url 'add_tubewell' %}">+ Add New Tubewell</a></p>
+
+<ul>
+    {% for tubewell in tubewells %}
+<li>
+    <a href="{% url 'tubewell_detail' tubewell.id %}">
+        {{ tubewell.name }}
+    </a>
+</li>
+{% endfor %}
+</ul>
+{% endblock %}
