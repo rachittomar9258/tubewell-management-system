@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from tubewells.models import Tubewell
+from decimal import Decimal
 
 
 class UsageRecord(models.Model):
@@ -28,14 +29,13 @@ class UsageRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Agar rate_per_hour set nahi hai, to tubewell se le lo
         if self.rate_per_hour is None and self.tubewell_id:
             self.rate_per_hour = self.tubewell.rate_per_hour
 
-        # Agar start_time aur end_time dono hain, to total_hours aur amount calculate karo
         if self.start_time and self.end_time:
             duration = self.end_time - self.start_time
-            self.total_hours = round(duration.total_seconds() / 3600, 2)
+            hours = Decimal(duration.total_seconds()) / Decimal(3600)
+            self.total_hours = round(hours, 2)
 
             if self.rate_per_hour:
                 self.amount = round(self.total_hours * self.rate_per_hour, 2)

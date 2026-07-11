@@ -24,7 +24,11 @@ Rate:
 
 <ul>
 {% for ar in authorized_renters %}
-    <li>{{ ar.renter.first_name }} - {{ ar.renter.phone_number }}</li>
+    <li>
+        <a href="{% url 'renter_action_panel' tubewell.id ar.renter.id %}">
+            {{ ar.renter.first_name }} ({{ ar.renter.phone_number }})
+        </a>
+    </li>
 {% empty %}
     <li>No renters added yet.</li>
 {% endfor %}

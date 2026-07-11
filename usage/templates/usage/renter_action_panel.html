@@ -1,0 +1,55 @@
+{% extends 'accounts/base.html' %}
+{% block title %}{{ renter.first_name }} - {{ tubewell.name }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'tubewell_detail' tubewell.id %}">&larr; Back to {{ tubewell.name }}</a></p>
+
+<h2>{{ renter.first_name }}</h2>
+<p>Phone: {{ renter.phone_number }}</p>
+
+<h3>Status: 
+    {% if running_record %}
+        <span style="color:green;">Running</span>
+    {% else %}
+        <span style="color:gray;">Idle</span>
+    {% endif %}
+</h3>
+
+{% if running_record %}
+    <p>Started at: {{ running_record.start_time | date:"d M Y, h:i A" }}</p>
+    <form method="POST" action="{% url 'stop_usage' tubewell.id renter.id %}">
+        {% csrf_token %}
+        <button type="submit" style="background:red;color:white;padding:10px 20px;">Stop</button>
+    </form>
+{% else %}
+    <form method="POST" action="{% url 'start_usage' tubewell.id renter.id %}">
+        {% csrf_token %}
+        <button type="submit" style="background:green;color:white;padding:10px 20px;">Start</button>
+    </form>
+{% endif %}
+
+<h3>Current Bill: ₹{{ total_bill|floatformat:2 }}</h3>
+
+<h3>Usage History</h3>
+<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">
+    <tr>
+        <th>Date</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Hours</th>
+        <th>Amount</th>
+        <th>Status</th>
+    </tr>
+    {% for record in usage_records %}
+    <tr>
+        <td style="white-space: nowrap;">{{ record.created_at|date:"d M Y" }}</td>
+        <td style="white-space: nowrap;">{{ record.start_time|time:"h:i A" }}</td>
+        <td style="white-space: nowrap;">{{ record.end_time|time:"h:i A"|default:"-" }}</td>
+        <td>{{ record.total_hours|default:"-" }}</td>
+        <td>{{ record.amount|floatformat:2|default:"-" }}</td>
+        <td>{{ record.status }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">Koi usage record nahi hai abhi.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}
