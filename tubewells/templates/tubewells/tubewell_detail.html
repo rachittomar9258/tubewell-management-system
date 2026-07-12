@@ -7,21 +7,9 @@
 <p>
     Rate: ₹{{ tubewell.rate_per_hour }}/hour<br>
     Location: {{ tubewell.location|default:"N/A" }}<br>
-    | <a href="{% url 'edit_tubewell' tubewell.id %}">Edit</a>
+    <a href="{% url 'edit_tubewell' tubewell.id %}">Edit</a> | 
+    <a href="{% url 'delete_tubewell' tubewell.id %}" style="color:red;">Delete</a>
 </p>
-
-<h3>Pending Cash Payments</h3>
-{% for payment in pending_payments %}
-    <div style="border:1px solid orange; padding:10px; margin-bottom:10px;">
-        {{ payment.paid_by.first_name }} ne ₹{{ payment.amount }} cash diya bataya hai.
-        <form method="POST" action="{% url 'confirm_cash_payment' payment.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Confirm Received</button>
-        </form>
-    </div>
-{% empty %}
-    <p>Koi pending cash payment nahi hai.</p>
-{% endfor %}
 
 <h3>Authorized Renters</h3>
 <ul>
@@ -30,11 +18,30 @@
             <a href="{% url 'renter_action_panel' tubewell.id ar.renter.id %}">
                 {{ ar.renter.first_name }} ({{ ar.renter.phone_number }})
             </a>
+            <form method="POST" action="{% url 'remove_renter' tubewell.id ar.renter.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="color:red;">Remove</button>
+            </form>
         </li>
     {% empty %}
         <li>Koi renter add nahi hua abhi.</li>
     {% endfor %}
 </ul>
+
+{% if inactive_renters %}
+<h3 style="color:gray;">Removed Renters</h3>
+<ul>
+    {% for ar in inactive_renters %}
+        <li style="color:gray;">
+            {{ ar.renter.first_name }} ({{ ar.renter.phone_number }})
+            <form method="POST" action="{% url 'restore_renter' tubewell.id ar.renter.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Restore</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endif %}
 
 <h3>Add Renter</h3>
 <form method="POST">

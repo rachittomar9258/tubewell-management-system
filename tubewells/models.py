@@ -12,6 +12,7 @@ class Tubewell(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=200, blank=True, null=True)
     rate_per_hour = models.DecimalField(max_digits=8, decimal_places=2)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -35,6 +36,7 @@ class AuthorizedRenter(models.Model):
         on_delete=models.CASCADE,
         related_name='authorized_renters'
     )
+    is_active = models.BooleanField(default=True)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

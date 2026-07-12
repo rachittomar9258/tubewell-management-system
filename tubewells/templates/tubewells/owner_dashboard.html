@@ -6,11 +6,29 @@
 
 <ul>
     {% for tubewell in tubewells %}
-<li>
-    <a href="{% url 'tubewell_detail' tubewell.id %}">
-        {{ tubewell.name }}
-    </a>
-</li>
-{% endfor %}
+        <li>
+            <a href="{% url 'tubewell_detail' tubewell.id %}">
+                <strong>{{ tubewell.name }}</strong>
+            </a>
+
+        </li>
+    {% empty %}
+        <li>Koi tubewell nahi hai abhi. Upar se naya add karo.</li>
+    {% endfor %}
 </ul>
+
+{% if inactive_tubewells %}
+<h3 style="color:gray; margin-top:30px;">Inactive Tubewells</h3>
+<ul>
+    {% for tubewell in inactive_tubewells %}
+        <li style="color:gray;">
+            {{ tubewell.name }} - ₹{{ tubewell.rate_per_hour }}/hour
+            <form method="POST" action="{% url 'reactivate_tubewell' tubewell.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Reactivate</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

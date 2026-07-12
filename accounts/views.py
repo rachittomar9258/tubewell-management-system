@@ -38,7 +38,7 @@ def renter_dashboard(request):
     if request.user.role != 'renter':
         return redirect('dashboard_redirect')
 
-    authorized_links = AuthorizedRenter.objects.filter(renter=request.user).select_related('tubewell', 'owner')
+    authorized_links = AuthorizedRenter.objects.filter(renter=request.user, is_active=True).select_related('tubewell', 'owner')
 
     tubewell_data = []
     for link in authorized_links:
