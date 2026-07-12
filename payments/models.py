@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from tubewells.models import Tubewell
 
 
 class Payment(models.Model):
@@ -12,6 +13,12 @@ class Payment(models.Model):
         ('pending', 'Pending'),
         ('success', 'Success'),
         ('failed', 'Failed'),
+    )
+
+    tubewell = models.ForeignKey(
+        Tubewell,
+        on_delete=models.CASCADE,
+        related_name='payments'
     )
 
     paid_by = models.ForeignKey(
@@ -49,5 +56,5 @@ class Payment(models.Model):
 
 
     def __str__(self):
-        return f"{self.paid_by.username} -> {self.paid_to.username} : {self.amount}"
+        return f"{self.paid_by.username} -> {self.paid_to.username} : {self.amount} ({self.status})"
 

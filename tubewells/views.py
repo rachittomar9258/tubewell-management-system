@@ -33,6 +33,25 @@ def add_tubewell(request):
 
 
 @login_required
+def edit_tubewell(request, tubewell_id):
+    tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
+
+    if request.method == 'POST':
+        form = TubewellForm(request.POST, instance=tubewell)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tubewell details update ho gaye.")
+            return redirect('tubewell_detail', tubewell_id=tubewell.id)
+    else:
+        form = TubewellForm(instance=tubewell)
+
+    return render(request, 'tubewells/edit_tubewell.html', {
+        'form': form,
+        'tubewell': tubewell,
+    })
+
+
+@login_required
 def tubewell_detail(request, tubewell_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
     authorized_renters = AuthorizedRenter.objects.filter(tubewell=tubewell)

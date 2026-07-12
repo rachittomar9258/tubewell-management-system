@@ -4,6 +4,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
+from tubewells.models import AuthorizedRenter
+from usage.utils import calculate_balance
 
 
 def signup_view(request):
@@ -30,8 +32,21 @@ def dashboard_redirect(request):
         return redirect('renter_dashboard')
     return redirect('/admin/')
 
+
 @login_required
 def renter_dashboard(request):
     if request.user.role != 'renter':
         return redirect('dashboard_redirect')
-    return render(request, 'accounts/renter_dashboard.html')
+
+    authorized_links = AuthorizedRenter.objects.filter(renter=request.user).select_related('tubewell', 'owner')
+
+    tubewell_data = []
+    for link in authorized_links:
+        balance = calculate_balance(link.owner, request.user, link.tubewell)
+        tubewell_data.append({
+            'tubewell': link.tubewell,
+            'owner': link.owner,
+            'balance': balance,
+        })
+
+    return render(request, 'accounts/renter_dashboard.html', {'tubewell_data': tubewell_data})

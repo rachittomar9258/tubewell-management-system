@@ -1,0 +1,11 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Edit {{ tubewell.name }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'tubewell_detail' tubewell.id %}">&larr; Back to {{ tubewell.name }}</a></p>
+<h2>Edit Tubewell</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save Changes</button>
+</form>
+{% endblock %}

@@ -1,6 +1,21 @@
 {% extends 'accounts/base.html' %}
-{% block title %}Renter Dashboard{% endblock %}
+{% block title %}My Dashboard{% endblock %}
 {% block content %}
-<h2>Welcome, {{ user.username }}!</h2>
-<p>Ye tumhara renter dashboard hai. Yaha jald hi tumhe apni usage history aur balance dikhega.</p>
+<h2>Welcome, {{ user.first_name|default:user.username }}!</h2>
+
+<h3>My Tubewells</h3>
+{% for item in tubewell_data %}
+    <div style="border:1px solid #ccc; padding:15px; margin-bottom:10px; border-radius:5px;">
+        <strong>{{ item.tubewell.name }}</strong> (Owner: {{ item.owner.first_name|default:item.owner.username }})
+        <br>
+        Balance Due: 
+        <span style="color:{% if item.balance > 0 %}red{% else %}green{% endif %}; font-weight:bold;">
+            ₹{{ item.balance|floatformat:2 }}
+        </span>
+        <br>
+        <a href="{% url 'my_usage_history' item.tubewell.id %}">View Usage History</a>
+    </div>
+{% empty %}
+    <p>Abhi tak koi tubewell authorize nahi hui hai tumhare liye.</p>
+{% endfor %}
 {% endblock %}

@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum
 from django.utils import timezone
 from tubewells.models import Tubewell, AuthorizedRenter
 from .models import UsageRecord
-from .utils import notify_user
+from .utils import notify_user, calculate_balance
+from payments.models import Payment
+from payments.forms import OwnerPaymentForm
 
 
 @login_required
@@ -24,16 +25,18 @@ def renter_action_panel(request, tubewell_id, renter_id):
         tubewell=tubewell, used_by=renter
     ).order_by('-created_at')
 
-    total_bill = usage_records.filter(status='completed').aggregate(
-        total=Sum('amount')
-    )['total'] or 0
+    balance = calculate_balance(request.user, renter, tubewell)
+    payments = Payment.objects.filter(tubewell=tubewell, paid_by=renter).order_by('-paid_at')
+    payment_form = OwnerPaymentForm()
 
     return render(request, 'usage/renter_action_panel.html', {
         'tubewell': tubewell,
         'renter': renter,
         'running_record': running_record,
         'usage_records': usage_records,
-        'total_bill': total_bill,
+        'balance': balance,
+        'payments': payments,
+        'payment_form': payment_form,
     })
 
 
@@ -75,7 +78,7 @@ def stop_usage(request, tubewell_id, renter_id):
 
     if record:
         record.end_time = timezone.now()
-        record.save()  # save() method khud total_hours, amount, status calculate kar dega
+        record.save()
 
         notify_user(
             renter.phone_number,
@@ -84,3 +87,22 @@ def stop_usage(request, tubewell_id, renter_id):
         messages.success(request, f"Record ban gaya — {record.total_hours} ghante, ₹{record.amount}")
 
     return redirect('renter_action_panel', tubewell_id=tubewell.id, renter_id=renter.id)
+
+@login_required
+def my_usage_history(request, tubewell_id):
+    if request.user.role != 'renter':
+        return redirect('dashboard_redirect')
+
+    tubewell = get_object_or_404(Tubewell, id=tubewell_id)
+    is_authorized = AuthorizedRenter.objects.filter(tubewell=tubewell, renter=request.user).exists()
+    if not is_authorized:
+        return redirect('renter_dashboard')
+
+    usage_records = UsageRecord.objects.filter(
+        tubewell=tubewell, used_by=request.user
+    ).order_by('-created_at')
+
+    return render(request, 'usage/my_usage_history.html', {
+        'tubewell': tubewell,
+        'usage_records': usage_records,
+    })
