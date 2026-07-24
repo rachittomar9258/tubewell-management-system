@@ -9,6 +9,12 @@ venv/
 # Environment Variables
 .env
 
+# Database
+db.sqlite3
+
+# Static files
+staticfiles/
+
 # VS Code
 .vscode/
 
