@@ -26,6 +26,7 @@ class UsageRecord(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='running')
+    sms_sent = models.BooleanField(default=False) 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

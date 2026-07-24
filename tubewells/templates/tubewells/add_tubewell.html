@@ -1,10 +1,105 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
+
 {% block title %}Add Tubewell{% endblock %}
+
 {% block content %}
-<h2>Add New Tubewell</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+
+<!-- ================= PAGE HEADER ================= -->
+
+<div class="hero fade-up mb-5">
+
+    <div class="row align-items-center">
+
+        <div class="col-lg-8">
+
+            <h1 class="fw-bold mb-3">
+
+                <i class="bi bi-plus-circle-fill me-2"></i>
+
+                Add New Tubewell
+
+            </h1>
+
+            <p class="lead mb-0">
+
+                Register a new tubewell by filling in the required information.
+                This tubewell will be available from your dashboard for renter management and payments.
+
+            </p>
+
+        </div>
+
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+
+            <img src="{% static 'images/tubewell.jpg' %}"
+                 class="img-fluid rounded-4 shadow"
+                 style="max-height:220px;object-fit:cover;">
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= FORM ================= -->
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-soft border-0 fade-up">
+
+            <div class="card-header bg-white py-3">
+
+                <h4 class="mb-0">
+
+                    <i class="bi bi-droplet-half text-primary me-2"></i>
+
+                    Tubewell Information
+
+                </h4>
+
+            </div>
+
+            <div class="card-body p-4">
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    {{ form.as_p }}
+
+                    <div class="d-flex justify-content-between mt-4">
+
+                        <a href="{% url 'owner_dashboard' %}"
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-arrow-left me-2"></i>
+
+                            Back
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary px-4">
+
+                            <i class="bi bi-check-circle-fill me-2"></i>
+
+                            Save Tubewell
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}

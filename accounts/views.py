@@ -1,12 +1,10 @@
-from django.shortcuts import render
-
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
-from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
 from tubewells.models import AuthorizedRenter
 from usage.utils import calculate_balance
-
+from .forms import SignUpForm, EditProfileForm
 
 def signup_view(request):
     if request.method == 'POST':
@@ -50,3 +48,16 @@ def renter_dashboard(request):
         })
 
     return render(request, 'accounts/renter_dashboard.html', {'tubewell_data': tubewell_data})
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile update ho gayi.")
+            return redirect('edit_profile')
+    else:
+        form = EditProfileForm(instance=request.user)
+
+    return render(request, 'accounts/edit_profile.html', {'form': form})

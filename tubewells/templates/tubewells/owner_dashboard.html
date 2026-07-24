@@ -1,34 +1,379 @@
 {% extends 'accounts/base.html' %}
-{% block title %}My Tubewells{% endblock %}
-{% block content %}
-<h2>My Tubewells</h2>
-<p><a href="{% url 'add_tubewell' %}">+ Add New Tubewell</a></p>
+{% load static %}
 
-<ul>
-    {% for tubewell in tubewells %}
-        <li>
-            <a href="{% url 'tubewell_detail' tubewell.id %}">
-                <strong>{{ tubewell.name }}</strong>
+{% block title %}Owner Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ================= HERO ================= -->
+
+<div class="hero fade-up mb-5">
+
+    <div class="row align-items-center">
+
+        <div class="col-lg-8">
+
+            <h1 class="display-5 fw-bold mb-3">
+                Welcome,
+                {{ user.first_name|default:user.username }}
+                👋
+            </h1>
+
+            <p class="lead mb-4">
+                Manage your tubewells, renters and irrigation system from one modern dashboard.
+                Monitor activity, manage payments and keep everything organized.
+            </p>
+
+            <a href="{% url 'add_tubewell' %}" class="btn btn-light btn-lg me-2">
+                <i class="bi bi-plus-circle-fill me-2"></i>
+                Add Tubewell
             </a>
 
-        </li>
-    {% empty %}
-        <li>Koi tubewell nahi hai abhi. Upar se naya add karo.</li>
-    {% endfor %}
-</ul>
+            <a href="#" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-bar-chart-fill me-2"></i>
+                Reports
+            </a>
+
+        </div>
+
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+
+            <img src="{% static 'images/tubewell.jpg' %}"
+                 class="img-fluid rounded-4 shadow"
+                 style="max-height:240px;object-fit:cover;">
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= STATISTICS ================= -->
+
+<div class="row g-4 mb-5">
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="stat-card fade-up">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <small class="text-muted">
+                        Total Tubewells
+                    </small>
+
+                    <h2 class="fw-bold mt-2">
+                        {{ tubewells|length }}
+                    </h2>
+
+                </div>
+
+                <div class="stat-icon">
+                    <i class="bi bi-droplet-half"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="stat-card fade-up">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <small class="text-muted">
+                        Renters
+                    </small>
+
+                    <h2 class="fw-bold mt-2">
+                        --
+                    </h2>
+
+                </div>
+
+                <div class="stat-icon bg-success">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="stat-card fade-up">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <small class="text-muted">
+                        Today's Income
+                    </small>
+
+                    <h2 class="fw-bold mt-2">
+                        ₹0
+                    </h2>
+
+                </div>
+
+                <div class="stat-icon bg-warning">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="stat-card fade-up">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <small class="text-muted">
+                        Running Motors
+                    </small>
+
+                    <h2 class="fw-bold mt-2">
+                        0
+                    </h2>
+
+                </div>
+
+                <div class="stat-icon bg-danger">
+                    <i class="bi bi-activity"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= MY TUBEWELLS ================= -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h3 class="fw-bold mb-0">
+
+        <i class="bi bi-droplet-fill text-primary me-2"></i>
+
+        My Tubewells
+
+    </h3>
+
+    <a href="{% url 'add_tubewell' %}" class="btn btn-primary">
+
+        <i class="bi bi-plus-lg"></i>
+
+        Add New
+
+    </a>
+
+</div>
+
+<div class="row g-4">
+
+{% for tubewell in tubewells %}
+
+<div class="col-lg-4 col-md-6">
+
+<div class="card h-100 shadow-soft border-0">
+
+<img src="{% static 'images/tubewell.jpg' %}"
+     class="card-img-top"
+     style="height:220px;object-fit:cover;">
+
+<div class="card-body d-flex flex-column">
+
+<h4 class="fw-bold">
+
+{{ tubewell.name }}
+
+</h4>
+
+<p class="text-muted mb-3">
+
+<i class="bi bi-currency-rupee"></i>
+
+{{ tubewell.rate_per_hour }}
+
+per hour
+
+</p>
+
+<div class="mt-auto">
+
+<a href="{% url 'tubewell_detail' tubewell.id %}"
+class="btn btn-primary w-100">
+
+<i class="bi bi-eye-fill me-2"></i>
+
+View Details
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<div class="col-12">
+
+<div class="glass text-center p-5">
+
+<i class="bi bi-droplet display-1 text-primary"></i>
+
+<h3 class="mt-4">
+
+No Tubewells Yet
+
+</h3>
+
+<p class="text-muted">
+
+Start by creating your first tubewell.
+
+</p>
+
+<a href="{% url 'add_tubewell' %}" class="btn btn-primary mt-3">
+
+<i class="bi bi-plus-circle me-2"></i>
+
+Add First Tubewell
+
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<!-- ================= CHART PLACEHOLDER ================= -->
+
+<div class="card mt-5">
+
+<div class="card-header">
+
+<h5 class="mb-0">
+
+<i class="bi bi-bar-chart-line-fill me-2"></i>
+
+Analytics Overview
+
+</h5>
+
+</div>
+
+<div class="card-body text-center text-muted py-5">
+
+<i class="bi bi-graph-up display-3"></i>
+
+<p class="mt-3">
+
+Charts will be integrated in the next phase.
+
+</p>
+
+</div>
+
+</div>
+
+<!-- ================= INACTIVE TUBEWELLS ================= -->
 
 {% if inactive_tubewells %}
-<h3 style="color:gray; margin-top:30px;">Inactive Tubewells</h3>
-<ul>
-    {% for tubewell in inactive_tubewells %}
-        <li style="color:gray;">
-            {{ tubewell.name }} - ₹{{ tubewell.rate_per_hour }}/hour
-            <form method="POST" action="{% url 'reactivate_tubewell' tubewell.id %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Reactivate</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+
+<div class="mt-5">
+
+<h3 class="fw-bold mb-4">
+
+<i class="bi bi-pause-circle-fill text-danger me-2"></i>
+
+Inactive Tubewells
+
+</h3>
+
+<div class="row g-4">
+
+{% for tubewell in inactive_tubewells %}
+
+<div class="col-lg-6">
+
+<div class="card border-start border-5 border-danger">
+
+<div class="card-body">
+
+<div class="d-flex justify-content-between align-items-center">
+
+<div>
+
+<h5 class="fw-bold">
+
+{{ tubewell.name }}
+
+</h5>
+
+<p class="text-muted mb-0">
+
+₹ {{ tubewell.rate_per_hour }}/hour
+
+</p>
+
+</div>
+
+<form method="POST"
+action="{% url 'reactivate_tubewell' tubewell.id %}">
+
+{% csrf_token %}
+
+<button class="btn btn-success">
+
+<i class="bi bi-arrow-clockwise me-2"></i>
+
+Reactivate
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
 {% endif %}
+
 {% endblock %}

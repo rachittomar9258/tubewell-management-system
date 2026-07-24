@@ -1,80 +1,610 @@
-{% extends 'accounts/base.html' %}
-{% block title %}{{ renter.first_name }} - {{ tubewell.name }}{% endblock %}
-{% block content %}
-<p><a href="{% url 'tubewell_detail' tubewell.id %}">&larr; Back to {{ tubewell.name }}</a></p>
+{% extends 'accounts/base.html' %} {% block title %}{{ renter.first_name }} - {{
+tubewell.name }}{% endblock %} {% block content %}
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --ink: #1b2b2b;
+    --paper: #f7f5ef;
+    --paper-dim: #efece2;
+    --water: #0e6ba8;
+    --water-deep: #175e54;
+    --flow: #2f8f4e;
+    --flow-dim: #e4f2e6;
+    --due: #c4622d;
+    --due-dim: #f7e6dc;
+    --stone: #8a8578;
+    --line: #dedad0;
+  }
 
-<h2>{{ renter.first_name }}</h2>
-<p>Phone: {{ renter.phone_number }}</p>
+  .tw-wrap {
+    font-family:
+      "IBM Plex Sans",
+      -apple-system,
+      sans-serif;
+    color: var(--ink);
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .tw-wrap h2,
+  .tw-wrap h3,
+  .tw-wrap .tw-figure {
+    font-family: "Fraunces", Georgia, serif;
+  }
 
-<h3>Status: 
-    {% if running_record %}
-        <span style="color:green;">Running</span>
-    {% else %}
-        <span style="color:gray;">Idle</span>
-    {% endif %}
-</h3>
+  /* ---------- Breadcrumb ---------- */
+  .tw-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--water-deep);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .tw-back:hover {
+    text-decoration: underline;
+  }
 
-{% if running_record %}
-    <p>Started at: {{ running_record.start_time|date:"d M Y, h:i A" }}</p>
-    <form method="POST" action="{% url 'stop_usage' tubewell.id renter.id %}">
-        {% csrf_token %}
-        <button type="submit" style="background:red;color:white;padding:10px 20px;">Stop</button>
-    </form>
-{% else %}
-    <form method="POST" action="{% url 'start_usage' tubewell.id renter.id %}">
-        {% csrf_token %}
-        <button type="submit" style="background:green;color:white;padding:10px 20px;">Start</button>
-    </form>
-{% endif %}
+  /* ---------- Hero / meter card ---------- */
+  .tw-hero {
+    background: linear-gradient(
+      165deg,
+      var(--water-deep) 0%,
+      var(--water) 100%
+    );
+    border-radius: 18px;
+    padding: 32px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+  .tw-hero::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .tw-hero-id {
+    position: relative;
+    z-index: 1;
+  }
+  .tw-hero-id h2 {
+    font-size: 1.9rem;
+    margin: 0 0 4px 0;
+    font-weight: 600;
+  }
+  .tw-hero-id p {
+    margin: 0;
+    opacity: 0.85;
+    font-size: 0.95rem;
+  }
 
-<h3>Balance Due: ₹{{ balance|floatformat:2 }}</h3>
+  /* Signature element: live water meter */
+  .tw-meter {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .tw-dial {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tw-dial-core {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #fff;
+    z-index: 2;
+  }
+  .tw-dial .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.55);
+  }
+  .tw-dial.is-running .ring {
+    animation: tw-ripple 2.4s ease-out infinite;
+  }
+  .tw-dial .ring:nth-child(1) {
+    width: 76px;
+    height: 76px;
+    animation-delay: 0s;
+  }
+  .tw-dial .ring:nth-child(2) {
+    width: 76px;
+    height: 76px;
+    animation-delay: 0.8s;
+  }
+  .tw-dial .ring:nth-child(3) {
+    width: 76px;
+    height: 76px;
+    animation-delay: 1.6s;
+  }
+  .tw-dial.is-idle .ring {
+    width: 76px;
+    height: 76px;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  @keyframes tw-ripple {
+    0% {
+      transform: scale(0.35);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.05);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tw-dial.is-running .ring {
+      animation: none;
+      opacity: 0.5;
+    }
+  }
 
-<h3>Record Payment</h3>
-<form method="POST" action="{% url 'record_payment' tubewell.id renter.id %}">
-    {% csrf_token %}
-    {{ payment_form.as_p }}
-    <button type="submit">Record Cash Payment</button>
-</form>
+  .tw-meter-readout {
+    min-width: 150px;
+  }
+  .tw-meter-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    opacity: 0.75;
+    margin: 0 0 2px 0;
+  }
+  .tw-clock {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .tw-clock-sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-top: 4px;
+  }
 
-<h3>Payment History</h3>
-<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">
-    <tr>
+  /* ---------- Action row ---------- */
+  .tw-action {
+    margin-top: 20px;
+  }
+  .tw-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 26px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: "IBM Plex Sans", sans-serif;
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.15s ease;
+  }
+  .tw-btn:active {
+    transform: translateY(1px);
+  }
+  .tw-btn-start {
+    background: var(--flow);
+    color: #fff;
+  }
+  .tw-btn-start:hover {
+    box-shadow: 0 4px 14px rgba(47, 143, 78, 0.35);
+  }
+  .tw-btn-stop {
+    background: var(--due);
+    color: #fff;
+  }
+  .tw-btn-stop:hover {
+    box-shadow: 0 4px 14px rgba(196, 98, 45, 0.35);
+  }
+
+  /* ---------- Stat + form cards ---------- */
+  .tw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 24px;
+  }
+  @media (max-width: 640px) {
+    .tw-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .tw-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .tw-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--water-deep);
+  }
+
+  .tw-balance-figure {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 2.1rem;
+    font-weight: 700;
+  }
+  .tw-balance-card.has-due {
+    background: var(--due-dim);
+    border-color: #e6bfa5;
+  }
+  .tw-balance-card.has-due .tw-balance-figure {
+    color: var(--due);
+  }
+  .tw-balance-card.clear {
+    background: var(--flow-dim);
+    border-color: #bfe0c6;
+  }
+  .tw-balance-card.clear .tw-balance-figure {
+    color: var(--flow);
+  }
+  .tw-balance-note {
+    font-size: 0.85rem;
+    color: var(--stone);
+    margin-top: 6px;
+  }
+
+  .tw-card form p {
+    margin: 0 0 12px 0;
+  }
+  .tw-card form label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--stone);
+    margin-bottom: 4px;
+  }
+  .tw-card form input,
+  .tw-card form select,
+  .tw-card form textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 0.92rem;
+    box-sizing: border-box;
+  }
+  .tw-submit {
+    background: var(--water-deep);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .tw-submit:hover {
+    background: var(--water);
+  }
+
+  /* ---------- Ledger tables ---------- */
+  .tw-section {
+    margin-top: 32px;
+  }
+  .tw-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .tw-section-head h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--water-deep);
+  }
+  .tw-count {
+    font-size: 0.8rem;
+    color: var(--stone);
+  }
+
+  .tw-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .tw-table th {
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--stone);
+    background: var(--paper-dim);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tw-table td {
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .tw-table tr:last-child td {
+    border-bottom: none;
+  }
+  .tw-table tbody tr:hover {
+    background: var(--paper-dim);
+  }
+  .tw-empty {
+    color: var(--stone);
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+  }
+
+  .tw-status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .tw-status-pill.completed {
+    background: var(--flow-dim);
+    color: var(--flow);
+  }
+  .tw-status-pill.other {
+    background: var(--paper-dim);
+    color: var(--stone);
+  }
+</style>
+
+<div class="tw-wrap">
+  <a class="tw-back" href="{% url 'tubewell_detail' tubewell.id %}"
+    >&larr; Back to {{ tubewell.name }}</a
+  >
+
+  <!-- Hero: live meter -->
+  <div class="tw-hero">
+    <div class="tw-hero-id">
+      <h2>{{ renter.first_name }}</h2>
+      <p>{{ renter.phone_number }}</p>
+
+      <div class="tw-action">
+        {% if running_record %}
+        <form
+          method="POST"
+          action="{% url 'stop_usage' tubewell.id renter.id %}"
+        >
+          {% csrf_token %}
+          <button type="submit" class="tw-btn tw-btn-stop">Stop pump</button>
+        </form>
+        {% else %}
+        <form
+          method="POST"
+          action="{% url 'start_usage' tubewell.id renter.id %}"
+        >
+          {% csrf_token %}
+          <button type="submit" class="tw-btn tw-btn-start">Start pump</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="tw-meter">
+      <div
+        class="tw-dial {% if running_record %}is-running{% else %}is-idle{% endif %}"
+      >
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="tw-dial-core"></div>
+      </div>
+      <div class="tw-meter-readout">
+        <p class="tw-meter-label">
+          {% if running_record %}Running since{% else %}Status{% endif %}
+        </p>
+        {% if running_record %}
+        <div
+          class="tw-clock"
+          id="tw-live-clock"
+          data-start="{{ running_record.start_time|date:'c' }}"
+          data-rate="{{ tubewell.rate_per_hour|default:'0' }}"
+        >
+          00:00:00
+        </div>
+        <div class="tw-clock-sub" id="tw-live-amount"></div>
+        {% else %}
+        <div class="tw-clock">Idle</div>
+        <div class="tw-clock-sub">Pump not running</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance + payment -->
+  <div class="tw-grid">
+    <div
+      class="tw-card tw-balance-card {% if balance > 0 %}has-due{% else %}clear{% endif %}"
+    >
+      <h3>Balance Due</h3>
+      <div class="tw-balance-figure">₹{{ balance|floatformat:2 }}</div>
+      <p class="tw-balance-note">
+        {% if balance > 0 %}Payment pending from {{ renter.first_name }}{% else
+        %}All settled, no dues{% endif %}
+      </p>
+    </div>
+
+    <div class="tw-card">
+      <h3>Record Payment</h3>
+      <form
+        method="POST"
+        action="{% url 'record_payment' tubewell.id renter.id %}"
+      >
+        {% csrf_token %} {{ payment_form.as_p }}
+        <button type="submit" class="tw-submit">Record Cash Payment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Payment history -->
+  <div class="tw-section">
+    <div class="tw-section-head">
+      <h3>Payment History</h3>
+      <span class="tw-count"
+        >{{ payments|length }} entr{{ payments|length|pluralize:"y,ies" }}</span
+      >
+    </div>
+    <table class="tw-table">
+      <tr>
         <th>Date</th>
         <th>Amount</th>
         <th>Method</th>
-    </tr>
-    {% for payment in payments %}
-    <tr>
-        <td style="white-space:nowrap;">{{ payment.paid_at|date:"d M Y, h:i A" }}</td>
+      </tr>
+      {% for payment in payments %}
+      <tr>
+        <td style="white-space: nowrap">
+          {{ payment.paid_at|date:"d M Y, h:i A" }}
+        </td>
         <td>₹{{ payment.amount|floatformat:2 }}</td>
         <td>{{ payment.method }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="3">Koi payment nahi hui abhi.</td></tr>
-    {% endfor %}
-</table>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3" class="tw-empty">Koi payment nahi hui abhi.</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
 
-<h3>Usage History</h3>
-<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">
-    <tr>
+  <!-- Usage history -->
+  <div class="tw-section">
+    <div class="tw-section-head">
+      <h3>Usage History</h3>
+      <span class="tw-count">{{ usage_records|length }} entr{{ usage_records|length|pluralize:"y,ies" }}</span>
+      
+    </div>
+    <table class="tw-table">
+      <tr>
         <th>Date</th>
         <th>Start</th>
         <th>End</th>
         <th>Hours</th>
         <th>Amount</th>
         <th>Status</th>
-    </tr>
-    {% for record in usage_records %}
-    <tr>
-        <td style="white-space:nowrap;">{{ record.created_at|date:"d M Y" }}</td>
-        <td style="white-space:nowrap;">{{ record.start_time|time:"h:i A" }}</td>
-        <td style="white-space:nowrap;">{{ record.end_time|time:"h:i A"|default:"-" }}</td>
+        <th>SMS</th>
+      </tr>
+      {% for record in usage_records %}
+      <tr>
+        <td style="white-space: nowrap">
+          {{ record.created_at|date:"d M Y" }}
+        </td>
+        <td style="white-space: nowrap">
+          {{ record.start_time|time:"h:i A" }}
+        </td>
+        <td style="white-space: nowrap">
+          {{ record.end_time|time:"h:i A"|default:"-" }}
+        </td>
         <td>{{ record.total_hours|default:"-" }}</td>
         <td>{{ record.amount|floatformat:2|default:"-" }}</td>
-        <td>{{ record.status }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="6">Koi usage record nahi hai abhi.</td></tr>
-    {% endfor %}
-</table>
+        <td>
+          {% if record.status == "completed" %}
+          <span class="tw-status-pill completed">{{ record.status }}</span>
+          {% else %}
+          <span class="tw-status-pill other">{{ record.status }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if record.status == "completed" %} {% if record.sms_sent %}
+          <span class="tw-status-pill completed">✓ Sent</span>
+          {% else %}
+          <form
+            method="POST"
+            action="{% url 'send_sms_for_record' record.id %}"
+            style="display: inline"
+          >
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="tw-btn tw-btn-start"
+              style="padding: 6px 14px; font-size: 0.78rem"
+            >
+              Send SMS
+            </button>
+          </form>
+          {% endif %} {% else %}
+          <span class="tw-status-pill other">-</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="tw-empty">Koi usage record nahi hai abhi.</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<script>
+  // Live ticking meter for the running record — updates every second,
+  // no page reload needed, so the timer feels genuinely "live".
+  (function () {
+    var clockEl = document.getElementById("tw-live-clock");
+    if (!clockEl) return; // nothing running
+
+    var startTime = new Date(clockEl.dataset.start);
+    var rate = parseFloat(clockEl.dataset.rate) || 0; // ₹ per hour, optional
+    var amountEl = document.getElementById("tw-live-amount");
+
+    function pad(n) {
+      return n < 10 ? "0" + n : "" + n;
+    }
+
+    function tick() {
+      var diffMs = Date.now() - startTime.getTime();
+      if (diffMs < 0) diffMs = 0;
+      var totalSec = Math.floor(diffMs / 1000);
+      var h = Math.floor(totalSec / 3600);
+      var m = Math.floor((totalSec % 3600) / 60);
+      var s = totalSec % 60;
+      clockEl.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
+
+      if (rate > 0) {
+        var hoursElapsed = diffMs / 3600000;
+        var liveAmount = (hoursElapsed * rate).toFixed(2);
+        amountEl.textContent = "≈ ₹" + liveAmount + " so far";
+      } else if (amountEl) {
+        amountEl.textContent = "elapsed time";
+      }
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
 {% endblock %}

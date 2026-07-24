@@ -2,13 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from tubewells.models import Tubewell, AuthorizedRenter
 from .models import UsageRecord
 from .utils import notify_user, calculate_balance
 from payments.models import Payment
 from payments.forms import OwnerPaymentForm
+from django.views.decorators.cache import never_cache
 
-
+@never_cache
 @login_required
 def renter_action_panel(request, tubewell_id, renter_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -66,6 +68,7 @@ def start_usage(request, tubewell_id, renter_id):
 
 @login_required
 def stop_usage(request, tubewell_id, renter_id):
+
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
     authorized = get_object_or_404(
         AuthorizedRenter, tubewell=tubewell, renter_id=renter_id, owner=request.user
@@ -76,17 +79,57 @@ def stop_usage(request, tubewell_id, renter_id):
         tubewell=tubewell, used_by=renter, status='running'
     ).first()
 
-    if record:
-        record.end_time = timezone.now()
-        record.save()
+    if not record:
+        messages.info(request, "Koi running usage nahi mili.")
+        return redirect('renter_action_panel', tubewell_id=tubewell.id, renter_id=renter.id)
 
-        notify_user(
-            renter.phone_number,
-            f"Tubewell use complete hui. Time: {record.total_hours} ghante, Amount: ₹{record.amount}"
-        )
-        messages.success(request, f"Record ban gaya — {record.total_hours} ghante, ₹{record.amount}")
+    record.end_time = timezone.now()
+    record.save()
+
+    sent = notify_user(
+        request.user,
+        renter.phone_number,
+        f"Tubewell use complete hui. Time: {record.total_hours} ghante, Amount: ₹{record.amount}"
+    )
+    record.sms_sent = bool(sent)
+    record.save(update_fields=['sms_sent'])
+
+    if sent:
+        messages.success(request, f"Record ban gaya — {record.total_hours} ghante, ₹{record.amount}. SMS bhej diya gaya.")
+    else:
+        messages.warning(request, f"Record ban gaya — {record.total_hours} ghante, ₹{record.amount}. SMS bhejne mein dikkat hui — baad mein 'Send SMS' button se retry kar sakte ho.")
 
     return redirect('renter_action_panel', tubewell_id=tubewell.id, renter_id=renter.id)
+
+
+@login_required
+@require_POST
+def send_sms_for_record(request, record_id):
+    """
+    Usage History table se ek specific record ke liye SMS resend karna.
+    """
+    record = get_object_or_404(
+        UsageRecord, id=record_id, tubewell__owner=request.user
+    )
+
+    if record.status != 'completed':
+        messages.error(request, "Yeh record abhi complete nahi hua.")
+        return redirect('renter_action_panel', tubewell_id=record.tubewell.id, renter_id=record.used_by.id)
+
+    sent = notify_user(
+        request.user,
+        record.used_by.phone_number,
+        f"Tubewell use complete hui. Time: {record.total_hours} ghante, Amount: ₹{record.amount}"
+    )
+
+    if sent:
+        record.sms_sent = True
+        record.save(update_fields=['sms_sent'])
+        messages.success(request, "SMS bhej diya gaya.")
+    else:
+        messages.error(request, "SMS bhejne mein dikkat hui — API key ya wallet balance check karo.")
+
+    return redirect('renter_action_panel', tubewell_id=record.tubewell.id, renter_id=record.used_by.id)
 
 @login_required
 def my_usage_history(request, tubewell_id):

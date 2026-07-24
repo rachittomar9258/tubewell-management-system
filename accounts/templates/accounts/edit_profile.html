@@ -1,0 +1,239 @@
+{% extends 'accounts/base.html' %}
+{% block title %}My Profile - Tubewell{% endblock %}
+
+{% block content %}
+<style>
+  :root{
+    --ink:#1b2b2b;
+    --paper:#f7f5ef;
+    --paper-dim:#efece2;
+    --water:#0e6ba8;
+    --water-deep:#175e54;
+    --flow:#2f8f4e;
+    --flow-dim:#e4f2e6;
+    --due:#c4622d;
+    --stone:#8a8578;
+    --line:#dedad0;
+  }
+
+  .pf-wrap{
+    font-family:'IBM Plex Sans', -apple-system, sans-serif;
+    color:var(--ink);
+    max-width:640px;
+    margin:0 auto;
+  }
+  .pf-wrap h2, .pf-wrap h4{
+    font-family:'Fraunces', Georgia, serif;
+  }
+
+  /* Header card with avatar */
+  .pf-hero{
+    background:linear-gradient(165deg, var(--water-deep) 0%, var(--water) 100%);
+    border-radius:18px;
+    padding:32px;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .pf-hero::after{
+    content:"";
+    position:absolute;
+    right:-50px; top:-50px;
+    width:180px; height:180px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.06);
+  }
+  .pf-avatar{
+    width:72px; height:72px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:2px solid rgba(255,255,255,0.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fraunces', serif;
+    font-size:1.8rem;
+    font-weight:600;
+    flex-shrink:0;
+    position:relative;
+    z-index:1;
+  }
+  .pf-hero-info{ position:relative; z-index:1; }
+  .pf-hero-info h2{
+    margin:0 0 6px 0;
+    font-size:1.6rem;
+    font-weight:600;
+  }
+  .pf-role-pill{
+    display:inline-block;
+    padding:4px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.18);
+    font-size:0.78rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+
+  /* Form card */
+  .pf-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px;
+    margin-top:22px;
+  }
+  .pf-card h4{
+    margin:0 0 18px 0;
+    font-size:1.1rem;
+    font-weight:600;
+    color:var(--water-deep);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .pf-field{ margin-bottom:18px; }
+  .pf-field label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--stone);
+    margin-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .pf-field input{
+    width:100%;
+    padding:11px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.95rem;
+    background:#fff;
+    box-sizing:border-box;
+    transition:border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .pf-field input:focus{
+    outline:none;
+    border-color:var(--water);
+    box-shadow:0 0 0 3px rgba(14,107,168,0.12);
+  }
+  .pf-field .pf-hint{
+    font-size:0.78rem;
+    color:var(--stone);
+    margin-top:5px;
+  }
+  .pf-field .errorlist{
+    list-style:none;
+    padding:0;
+    margin:6px 0 0 0;
+    color:var(--due);
+    font-size:0.8rem;
+  }
+
+  .pf-sms-section{
+    border-top:1px dashed var(--line);
+    margin-top:8px;
+    padding-top:18px;
+  }
+  .pf-sms-note{
+    background:var(--flow-dim);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:0.82rem;
+    color:var(--water-deep);
+    margin-bottom:16px;
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+  }
+
+  .pf-submit{
+    background:var(--water-deep);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:12px 28px;
+    font-size:0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:background 0.15s ease, transform 0.08s ease;
+  }
+  .pf-submit:hover{ background:var(--water); }
+  .pf-submit:active{ transform:translateY(1px); }
+</style>
+
+<div class="pf-wrap">
+
+  <!-- Profile hero -->
+  <div class="pf-hero">
+    <div class="pf-avatar">
+      {{ user.username|first|upper }}
+    </div>
+    <div class="pf-hero-info">
+      <h2>{{ user.first_name|default:user.username }}</h2>
+      <span class="pf-role-pill">{{ user.get_role_display }}</span>
+    </div>
+  </div>
+
+  <!-- Edit form -->
+  <div class="pf-card">
+    <h4><i class="bi bi-pencil-square"></i> Edit Details</h4>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="pf-field">
+        <label><i class="bi bi-telephone"></i> Phone Number</label>
+        {{ form.phone_number }}
+        {% if form.phone_number.errors %}
+          <ul class="errorlist">{% for e in form.phone_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="pf-field">
+        <label><i class="bi bi-geo-alt"></i> Village</label>
+        {{ form.village }}
+        {% if form.village.errors %}
+          <ul class="errorlist">{% for e in form.village.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      {% if form.fast2sms_api_key %}
+      <div class="pf-sms-section">
+        <div class="pf-sms-note">
+          <i class="bi bi-info-circle"></i>
+          <span>Yeh key SMS notifications bhejne ke liye chahiye jab bhi koi tubewell usage complete ho.</span>
+        </div>
+        <div class="pf-field">
+          <label><i class="bi bi-chat-dots"></i> Fast2SMS API Key</label>
+          {{ form.fast2sms_api_key }}
+          {% if form.fast2sms_api_key.errors %}
+            <ul class="errorlist">{% for e in form.fast2sms_api_key.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+          <div class="pf-hint">fast2sms.com dashboard ke Dev API section se milegi</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <button type="submit" class="pf-submit">
+        <i class="bi bi-check-circle"></i> Save Changes
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}

@@ -4,10 +4,12 @@ from django.contrib.auth import get_user_model
 from django.contrib import messages
 from .models import Tubewell, AuthorizedRenter
 from .forms import TubewellForm, AddRenterForm
+from .forms import EditRenterForm
+from django.views.decorators.cache import never_cache
 
 User = get_user_model()
 
-
+@never_cache
 @login_required
 def owner_dashboard(request):
     if request.user.role != 'owner':
@@ -16,7 +18,7 @@ def owner_dashboard(request):
     inactive_tubewells = Tubewell.objects.filter(owner=request.user, is_active=False)
     return render(request, 'tubewells/owner_dashboard.html', {'tubewells': tubewells, 'inactive_tubewells': inactive_tubewells})
 
-
+@never_cache
 @login_required
 def add_tubewell(request):
     if request.user.role != 'owner':
@@ -32,7 +34,7 @@ def add_tubewell(request):
         form = TubewellForm()
     return render(request, 'tubewells/add_tubewell.html', {'form': form})
 
-
+@never_cache
 @login_required
 def edit_tubewell(request, tubewell_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -51,7 +53,7 @@ def edit_tubewell(request, tubewell_id):
         'tubewell': tubewell,
     })
 
-
+@never_cache
 @login_required
 def tubewell_detail(request, tubewell_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -102,6 +104,7 @@ def tubewell_detail(request, tubewell_id):
         'form': form,
     })
 
+@never_cache
 @login_required
 def delete_tubewell(request, tubewell_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -114,6 +117,7 @@ def delete_tubewell(request, tubewell_id):
 
     return render(request, 'tubewells/delete_tubewell_confirm.html', {'tubewell': tubewell})
 
+@never_cache
 @login_required
 def reactivate_tubewell(request, tubewell_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -125,6 +129,7 @@ def reactivate_tubewell(request, tubewell_id):
 
     return redirect('owner_dashboard')
 
+@never_cache
 @login_required
 def remove_renter(request, tubewell_id, renter_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -138,6 +143,7 @@ def remove_renter(request, tubewell_id, renter_id):
     return redirect('tubewell_detail', tubewell_id=tubewell.id)
 
 
+@never_cache
 @login_required
 def restore_renter(request, tubewell_id, renter_id):
     tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
@@ -149,3 +155,26 @@ def restore_renter(request, tubewell_id, renter_id):
         messages.success(request, f"{link.renter.first_name} wapas add ho gaya.")
 
     return redirect('tubewell_detail', tubewell_id=tubewell.id)
+
+@never_cache
+@login_required
+def edit_renter(request, tubewell_id, renter_id):
+    tubewell = get_object_or_404(Tubewell, id=tubewell_id, owner=request.user)
+    link = get_object_or_404(AuthorizedRenter, tubewell=tubewell, renter_id=renter_id, owner=request.user)
+    renter = link.renter
+
+    if request.method == 'POST':
+        form = EditRenterForm(request.POST)
+        if form.is_valid():
+            renter.first_name = form.cleaned_data['name']
+            renter.save()
+            messages.success(request, "Renter ka naam update ho gaya.")
+            return redirect('tubewell_detail', tubewell_id=tubewell.id)
+    else:
+        form = EditRenterForm(initial={'name': renter.first_name})
+
+    return render(request, 'tubewells/edit_renter.html', {
+        'form': form,
+        'tubewell': tubewell,
+        'renter': renter,
+    })

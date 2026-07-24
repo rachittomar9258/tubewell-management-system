@@ -1,11 +1,106 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
+
 {% block title %}Edit {{ tubewell.name }}{% endblock %}
+
 {% block content %}
-<p><a href="{% url 'tubewell_detail' tubewell.id %}">&larr; Back to {{ tubewell.name }}</a></p>
-<h2>Edit Tubewell</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
+
+<!-- ================= HERO ================= -->
+
+<div class="hero fade-up mb-5">
+
+    <div class="row align-items-center">
+
+        <div class="col-lg-8">
+
+            <h1 class="fw-bold mb-3">
+
+                <i class="bi bi-pencil-square me-2"></i>
+
+                Edit Tubewell
+
+            </h1>
+
+            <p class="lead mb-0">
+
+                Update the information for
+                <strong>{{ tubewell.name }}</strong>.
+                Changes will be reflected immediately in your dashboard.
+
+            </p>
+
+        </div>
+
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+
+            <img src="{% static 'images/tubewell.jpg' %}"
+                 class="img-fluid rounded-4 shadow"
+                 style="max-height:220px;object-fit:cover;">
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= FORM ================= -->
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-soft border-0 fade-up">
+
+            <div class="card-header bg-white py-3">
+
+                <h4 class="mb-0">
+
+                    <i class="bi bi-droplet-half text-primary me-2"></i>
+
+                    Update Tubewell Details
+
+                </h4>
+
+            </div>
+
+            <div class="card-body p-4">
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    {{ form.as_p }}
+
+                    <div class="d-flex justify-content-between mt-4">
+
+                        <a href="{% url 'tubewell_detail' tubewell.id %}"
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-arrow-left me-2"></i>
+
+                            Back
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-warning px-4">
+
+                            <i class="bi bi-check2-circle me-2"></i>
+
+                            Save Changes
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}

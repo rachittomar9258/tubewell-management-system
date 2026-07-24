@@ -1,0 +1,401 @@
+/* =========================================================
+   Tubewell Management System
+   Premium Modern UI
+   ========================================================= */
+
+:root{
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --secondary:#06b6d4;
+    --success:#22c55e;
+    --danger:#ef4444;
+    --warning:#f59e0b;
+
+    --bg:#f4f7fb;
+    --surface:#ffffff;
+    --surface-2:#f8fafc;
+
+    --text:#1e293b;
+    --muted:#64748b;
+
+    --border:#e2e8f0;
+
+    --shadow-sm:0 5px 15px rgba(15,23,42,.08);
+    --shadow:0 10px 30px rgba(15,23,42,.10);
+    --shadow-lg:0 20px 45px rgba(15,23,42,.15);
+
+    --radius:18px;
+    --transition:.3s ease;
+}
+
+/* =========================================================
+   Base
+   ========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+/* =========================================================
+   Navbar
+   ========================================================= */
+
+.custom-navbar{
+    background:rgba(37,99,235,.92);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,.15);
+}
+
+.navbar-brand{
+    font-weight:700;
+    letter-spacing:.4px;
+}
+
+.navbar-brand img{
+    width:45px;
+    height:45px;
+    object-fit:cover;
+    transition:var(--transition);
+}
+
+.navbar-brand:hover img{
+    transform:rotate(8deg) scale(1.08);
+}
+
+.nav-link{
+    font-weight:500;
+}
+
+.navbar .btn{
+    border-radius:12px;
+}
+
+/* =========================================================
+   Hero Banner
+   ========================================================= */
+
+.hero{
+    background:linear-gradient(135deg,#2563eb,#0ea5e9);
+    color:#fff;
+    border-radius:24px;
+    padding:60px;
+    box-shadow:var(--shadow-lg);
+    margin-bottom:35px;
+    overflow:hidden;
+    position:relative;
+}
+
+.hero::after{
+    content:"";
+    position:absolute;
+    width:250px;
+    height:250px;
+    background:rgba(255,255,255,.08);
+    border-radius:50%;
+    top:-80px;
+    right:-60px;
+}
+
+.hero h1{
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+.hero p{
+    opacity:.92;
+    font-size:1.05rem;
+}
+
+/* =========================================================
+   Cards
+   ========================================================= */
+
+.card{
+    border:none;
+    border-radius:var(--radius);
+    background:var(--surface);
+    box-shadow:var(--shadow-sm);
+    transition:var(--transition);
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    box-shadow:var(--shadow-lg);
+}
+
+.card-header{
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    font-weight:600;
+}
+
+.stat-card{
+    border-radius:20px;
+    padding:28px;
+    background:#fff;
+    box-shadow:var(--shadow);
+    transition:var(--transition);
+}
+
+.stat-card:hover{
+    transform:translateY(-8px);
+}
+
+.stat-icon{
+    width:60px;
+    height:60px;
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    color:#fff;
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+}
+
+/* =========================================================
+   Glass Cards
+   ========================================================= */
+
+.glass{
+    background:rgba(255,255,255,.65);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.3);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
+.btn{
+    border-radius:12px;
+    font-weight:600;
+    transition:var(--transition);
+}
+
+.btn-primary{
+    background:var(--primary);
+    border:none;
+}
+
+.btn-primary:hover{
+    background:var(--primary-dark);
+    transform:translateY(-2px);
+}
+
+.btn-info{
+    color:#fff;
+}
+
+.btn-success:hover,
+.btn-danger:hover,
+.btn-warning:hover,
+.btn-info:hover{
+    transform:translateY(-2px);
+}
+
+/* =========================================================
+   Forms
+   ========================================================= */
+
+.form-control,
+.form-select{
+    border-radius:12px;
+    border:1px solid var(--border);
+    padding:.8rem 1rem;
+    transition:var(--transition);
+    box-shadow:none;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 .2rem rgba(37,99,235,.15);
+}
+
+label{
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+/* =========================================================
+   Tables
+   ========================================================= */
+
+.table{
+    background:#fff;
+    border-radius:16px;
+    overflow:hidden;
+}
+
+.table thead{
+    background:var(--primary);
+    color:#fff;
+}
+
+.table tbody tr{
+    transition:var(--transition);
+}
+
+.table tbody tr:hover{
+    background:#eef5ff;
+}
+
+/* =========================================================
+   Alerts
+   ========================================================= */
+
+.alert{
+    border:none;
+    border-radius:14px;
+    box-shadow:var(--shadow-sm);
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+.footer{
+    background:#0f172a;
+    color:#fff;
+    margin-top:80px;
+}
+
+.footer h5{
+    font-weight:700;
+}
+
+.footer p{
+    color:#cbd5e1;
+}
+
+/* =========================================================
+   Utilities
+   ========================================================= */
+
+.shadow-soft{
+    box-shadow:var(--shadow);
+}
+
+.rounded-xl{
+    border-radius:22px;
+}
+
+.section-title{
+    font-weight:700;
+    margin-bottom:25px;
+}
+
+.text-muted{
+    color:var(--muted)!important;
+}
+
+/* =========================================================
+   Scrollbar
+   ========================================================= */
+
+::-webkit-scrollbar{
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+    background:#edf2f7;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#94a3b8;
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#64748b;
+}
+
+/* =========================================================
+   Animation
+   ========================================================= */
+
+.fade-up{
+    animation:fadeUp .6s ease;
+}
+
+@keyframes fadeUp{
+
+    from{
+        opacity:0;
+        transform:translateY(30px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media(max-width:991px){
+
+    .hero{
+        padding:40px 25px;
+        text-align:center;
+    }
+
+    .navbar-brand small{
+        display:none;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .hero{
+        padding:30px 20px;
+    }
+
+    .hero h1{
+        font-size:1.8rem;
+    }
+
+    .card{
+        margin-bottom:20px;
+    }
+
+}
+
+@media(max-width:576px){
+
+    .navbar-brand img{
+        width:38px;
+        height:38px;
+    }
+
+    .hero h1{
+        font-size:1.5rem;
+    }
+
+    .hero p{
+        font-size:.95rem;
+    }
+
+}

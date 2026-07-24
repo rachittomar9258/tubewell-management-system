@@ -1,0 +1,16 @@
+{% extends 'accounts/base.html' %}
+{% block content %}
+<div class="alert alert-warning">
+    <h5>TextBee offline hai</h5>
+    <p>Device se connection nahi ban pa raha. SMS abhi nahi bhej sakte.</p>
+
+    <a href="{% url 'renter_action_panel' tubewell.id renter.id %}" class="btn btn-secondary">
+        Retry (TextBee khol ke)
+    </a>
+
+    <form method="post" action="{% url 'stop_usage_without_sms' tubewell.id renter.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Stop without SMS</button>
+    </form>
+</div>
+{% endblock %}
